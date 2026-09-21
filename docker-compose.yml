@@ -1,0 +1,20 @@
+services:
+  calibration-api:
+    build: .
+    image: calibration-timeline-api:latest
+    container_name: calibration-timeline-api
+    ports:
+      - "8080:8080"
+    environment:
+      # 服务监听地址与端口（容器内）；宿主机访问端口由上面的 ports 决定
+      HOST: "0.0.0.0"
+      PORT: "8080"
+      # 注意：状态保存在进程内存中，切勿增加 uvicorn worker 或复制多副本，
+      # 否则各进程/副本的状态互不可见。
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:%s/healthz' % os.environ.get('PORT','8080'), timeout=2).read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
